@@ -1,40 +1,50 @@
 name: Build Matplotlib on FreeBSD
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
+      - name: Set up FreeBSD
+        uses: vmactions/freebsd-vm@v0.2.0
+        with:
+          image: 'freebsd-13.1'
+          install: |
+            # Install necessary dependencies
+            sudo pkg update
+            sudo pkg install -y python3.11 python3.11-venv gcc wget
+            python3.11 -m ensurepip
+            python3.11 -m pip install --upgrade pip setuptools wheel build
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y python3.11-venv gcc wget
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
 
-    - name: Create and activate virtual environment
-      run: |
-        python3.11 -m venv venv
-        source venv/bin/activate
+      - name: Build Matplotlib
+        run: |
+          # Create and activate virtual environment
+          python3.11 -m venv venv
+          source venv/bin/activate
+          
+          # Clone and build Matplotlib
+          git clone https://github.com/matplotlib/matplotlib.git
+          cd matplotlib
+          python -m build
 
-    - name: Upgrade pip, setuptools, and wheel
-      run: |
-        pip install --upgrade pip setuptools wheel
-
-    - name: Install Matplotlib
-      run: |
-        pip install --no-binary matplotlib matplotlib
-
-    - name: Archive wheels
-      uses: actions/upload-artifact@v3
-      with:
-        name: built-wheels
-        path: venv/lib/python3.11/site-packages/*.whl
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-wheels
+          path: matplotlib/dist/*.whl
 
