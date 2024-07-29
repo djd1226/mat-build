@@ -1,0 +1,19 @@
+task:
+  name: Build Matplotlib on FreeBSD
+  freebsd_instance:
+    image_family: freebsd-14-0
+  env:
+    PYTHON_VERSION: 3.11
+  install_script:
+    - sudo pkg update
+    - sudo pkg install -y python${PYTHON_VERSION} py${PYTHON_VERSION}-pip py${PYTHON_VERSION}-setuptools py${PYTHON_VERSION}-wheel gcc wget
+  script:
+    - wget https://github.com/matplotlib/matplotlib/archive/refs/tags/v3.9.1.tar.gz
+    - tar -xzf v3.9.1.tar.gz
+    - cd matplotlib-3.9.1
+    - pip${PYTHON_VERSION} install -r requirements/build.txt
+    - python${PYTHON_VERSION} setup.py bdist_wheel
+  artifacts:
+    paths:
+      - matplotlib-3.9.1/dist/*.whl
+
