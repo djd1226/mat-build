@@ -15,5 +15,5 @@ task:
     - python${PYTHON_VERSION} setup.py bdist_wheel
   artifacts:
     paths:
-      - matplotlib-3.9.1/dist/*.whl
+      - matplotlib-3.9.0/dist/*.whl
 
