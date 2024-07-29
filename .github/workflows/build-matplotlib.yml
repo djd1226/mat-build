@@ -1,63 +1,44 @@
-name: Build and Package Matplotlib
+name: Build Matplotlib for FreeBSD
 
 on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4  # 更新到 v4
-
-    - name: Setup Python 3.11
-      uses: actions/setup-python@v4  # 更新到 v4
-      with:
-        python-version: '3.11'
-
-    - name: Install Build Tools and Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc g++ make pkg-config
-        python -m pip install --upgrade pip wheel setuptools
-
-    - name: Build Matplotlib with Dependencies
-      run: |
-        python -m pip wheel matplotlib==3.9.1 -w wheels
-
-    - name: Package Dependencies
-      run: |
-        python -m pip install matplotlib==3.9.1
-        python -m pip freeze > requirements.txt
-        python -m pip wheel -r requirements.txt -w wheels
-
-    - name: Upload Built Wheels
-      uses: actions/upload-artifact@v4  # 更新到 v4
-      with:
-        name: built-wheels
-        path: ./wheels/*.whl
-
-  release:
-    needs: build
     runs-on: ubuntu-latest
-    steps:
-    - name: Download Built Wheels
-      uses: actions/download-artifact@v4  # 更新到 v4
-      with:
-        name: built-wheels
-        path: ./wheels
 
-    - name: Create GitHub Release
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: './wheels/*.whl'
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.ref }}
-        name: Release ${{ github.ref }}
-        body: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Docker
+        run: sudo apt-get install docker.io -y
+
+      - name: Pull FreeBSD Docker image
+        run: docker pull freebsd:latest
+
+      - name: Run FreeBSD Docker container and build Matplotlib
+        run: |
+          docker run --name freebsd-builder -d freebsd:latest /bin/sh -c "while true; do sleep 1000; done"
+          docker exec freebsd-builder sh -c "pkg install -y python311 py311-pip py311-setuptools py311-wheel gcc"
+          docker exec freebsd-builder sh -c "pkg install -y wget"
+          docker exec freebsd-builder sh -c "wget https://github.com/matplotlib/matplotlib/archive/refs/tags/v3.9.1.tar.gz"
+          docker exec freebsd-builder sh -c "tar -xzf v3.9.1.tar.gz"
+          docker exec freebsd-builder sh -c "cd matplotlib-3.9.1 && pip install -r requirements/build.txt"
+          docker exec freebsd-builder sh -c "cd matplotlib-3.9.1 && python3.11 setup.py bdist_wheel"
+          docker cp freebsd-builder:/matplotlib-3.9.1/dist ./
+
+      - name: Upload built wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-wheels
+          path: ./dist/*.whl
 
