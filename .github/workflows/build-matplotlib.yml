@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4  # 更新到 v4
 
     - name: Setup Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v4  # 更新到 v4
       with:
         python-version: '3.11'
 
@@ -35,7 +35,7 @@ jobs:
         python -m pip wheel -r requirements.txt -w wheels
 
     - name: Upload Built Wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # 更新到 v4
       with:
         name: built-wheels
         path: ./wheels/*.whl
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Download Built Wheels
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4  # 更新到 v4
       with:
         name: built-wheels
         path: ./wheels
