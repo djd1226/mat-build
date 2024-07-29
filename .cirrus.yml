@@ -12,12 +12,8 @@ task:
     - python${PYTHON_VERSION} -m venv venv  # 创建虚拟环境
     - source venv/bin/activate  # 激活虚拟环境
     - pip install --upgrade pip setuptools wheel  # 安装 pip、setuptools 和 wheel
-    - wget https://github.com/matplotlib/matplotlib/archive/refs/tags/v3.9.1.tar.gz
-    - tar -xzf v3.9.1.tar.gz
-    - cd matplotlib-3.9.1
-    - pip install -r requirements/build.txt
-    - python setup.py bdist_wheel
+    - pip install --no-binary matplotlib matplotlib  # 下载并编译 matplotlib 及其所有依赖项
   artifacts:
     paths:
-      - matplotlib-3.9.1/dist/*.whl
+      - venv/lib/python${PYTHON_VERSION}/site-packages/*.whl
 
