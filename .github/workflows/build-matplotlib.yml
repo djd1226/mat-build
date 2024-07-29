@@ -33,7 +33,7 @@ jobs:
           docker exec freebsd-builder sh -c "tar -xzf v3.9.1.tar.gz"
           docker exec freebsd-builder sh -c "cd matplotlib-3.9.1 && pip install -r requirements/build.txt"
           docker exec freebsd-builder sh -c "cd matplotlib-3.9.1 && python3.11 setup.py bdist_wheel"
-          docker cp freebsd-builder:/matplotlib-3.9.1/dist ./
+          docker cp freebsd-builder:/matplotlib-3.9.1/dist ./dist
 
       - name: Upload built wheels
         uses: actions/upload-artifact@v4
