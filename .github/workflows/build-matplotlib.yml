@@ -1,0 +1,40 @@
+name: Build Matplotlib on FreeBSD
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3.11-venv gcc wget
+
+    - name: Create and activate virtual environment
+      run: |
+        python3.11 -m venv venv
+        source venv/bin/activate
+
+    - name: Upgrade pip, setuptools, and wheel
+      run: |
+        pip install --upgrade pip setuptools wheel
+
+    - name: Install Matplotlib
+      run: |
+        pip install --no-binary matplotlib matplotlib
+
+    - name: Archive wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: built-wheels
+        path: venv/lib/python3.11/site-packages/*.whl
+
