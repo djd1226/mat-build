@@ -23,13 +23,12 @@ jobs:
         run: sudo apt-get install docker.io -y
 
       - name: Pull FreeBSD Docker image
-        run: docker pull freebsd:latest
+        run: docker pull yuiitsu/freebsd:14.1
 
       - name: Run FreeBSD Docker container and build Matplotlib
         run: |
-          docker run --name freebsd-builder -d freebsd:latest /bin/sh -c "while true; do sleep 1000; done"
-          docker exec freebsd-builder sh -c "pkg install -y python311 py311-pip py311-setuptools py311-wheel gcc"
-          docker exec freebsd-builder sh -c "pkg install -y wget"
+          docker run --name freebsd-builder -d yuiitsu/freebsd:14.1 /bin/sh -c "while true; do sleep 1000; done"
+          docker exec freebsd-builder sh -c "pkg install -y python311 py311-pip py311-setuptools py311-wheel gcc wget"
           docker exec freebsd-builder sh -c "wget https://github.com/matplotlib/matplotlib/archive/refs/tags/v3.9.1.tar.gz"
           docker exec freebsd-builder sh -c "tar -xzf v3.9.1.tar.gz"
           docker exec freebsd-builder sh -c "cd matplotlib-3.9.1 && pip install -r requirements/build.txt"
@@ -37,7 +36,7 @@ jobs:
           docker cp freebsd-builder:/matplotlib-3.9.1/dist ./
 
       - name: Upload built wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: built-wheels
           path: ./dist/*.whl
